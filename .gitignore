@@ -42,3 +42,11 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Déploiement EDEN : secrets et journaux locaux (voir Documentation/)
+Documentation/scripts/deploiement.conf
+Documentation/scripts/historique-deploiements.log
+*.env
+!Documentation/portainer/*.env.example
+.env
+.env.*
