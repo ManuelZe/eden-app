@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.3.0 — 2026-09-29
+
+### Corrections
+
+- **affichage** Modification Prime UI License (e241c33)
+
 ## v0.2.0 — 2026-09-29
 
 ### Documentation
