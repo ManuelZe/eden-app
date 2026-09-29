@@ -26,4 +26,5 @@ export const environment = {
   production: true,
   apiUrl: withTrailingSlash(runtime.apiUrl || serverEnv['API_URL'] || DEFAULT_API_URL),
   version: runtime.version || serverEnv['APP_VERSION'] || 'dev',
+  primeUiLicense: 'eyJpZCI6IjM4NTA2ZTVkLTQ3NmEtNDUwMi04ZDg2LTY0YzA3NzQ3ZGQ5NyIsInByb2R1Y3QiOiJwcmltZXVpIiwidGllciI6ImNvbW11bml0eSIsInR5cGUiOiJkZXYiLCJpYXQiOjE3ODI5MDUzODAsImV4cCI6MTgxNDQ0MTM4MH0.I7n5VbbUT4iokSQ3JuuvSN6HR4-6x00vQzIcumP-OGexo-iydFm-4LMFm-AyNaIGjWeNiWnWQcMQQavr5i3-Cw'
 };
