@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.2.0 — 2026-09-29
+
+### Documentation
+
+- **documenttion** Modification de la documentation (e76e612)
+
 ## v0.1.1 — 2026-09-29
 
 ### Documentation
