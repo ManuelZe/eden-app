@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.3.5 — 2026-09-29
+
+### Corrections
+
+- **message** On enlève le message erreur de prime NG 3 (61f4628)
+
 ## v0.3.4 — 2026-09-29
 
 ### Corrections
