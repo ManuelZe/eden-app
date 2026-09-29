@@ -51,6 +51,8 @@ version_actuelle="$(jq -r '(.Env // [])[] | select(.name == "EDEN_VERSION") | .v
 ok "Stack « ${PORTAINER_STACK_NAME} » (id ${stack_id}, environnement ${endpoint_id})"
 info "Version actuellement configurée : ${C_GRAS}${version_actuelle:-inconnue}${C_RESET}"
 
+info "Variables d'environnement de la stack : $(jq -r '(.Env // []) | map("\(.name)=\(.value)") | join(", ")' <<<"$stack")"
+info "${EDEN_PUBLIC_URL:-} -- {statut} : $(curl -fsS --max-time 10 "${EDEN_PUBLIC_URL%/}/healthz" 2>/dev/null || echo 'injoignable')"
 if [[ "${1:-}" == "--statut" ]]; then
   [[ -n "${EDEN_PUBLIC_URL:-}" ]] && info "Réponse publique /healthz : $(curl -fsS --max-time 10 "${EDEN_PUBLIC_URL%/}/healthz" 2>/dev/null || echo 'injoignable')"
   exit 0
