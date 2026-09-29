@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.3.7 — 2026-09-29
+
+### Corrections
+
+- **url** Redirection vers le domaine même de l'application (3b68668)
+
 ## v0.3.6 — 2026-09-29
 
 ### Corrections
