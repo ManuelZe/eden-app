@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.3.6 — 2026-09-29
+
+### Corrections
+
+- **message** On enlève le message erreur de prime NG 4 (f534d98)
+
 ## v0.3.5 — 2026-09-29
 
 ### Corrections
