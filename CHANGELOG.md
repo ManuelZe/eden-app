@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.3.1 — 2026-09-29
+
+### Corrections
+
+- **logo** Changement de Logo (e9e2581)
+
 ## v0.3.0 — 2026-09-29
 
 ### Corrections
