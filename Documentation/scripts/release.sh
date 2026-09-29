@@ -164,7 +164,7 @@ ok "Commit « chore(release): ${tag} » et tag ${tag} créés"
 # -----------------------------------------------------------------------------
 if (( PUSH )); then
   etape "7. Publication (push)"
-  git push origin "$BRANCHE_RELEASE"
+  git push origin "$BRANCHE_RELEASE" 
   git push origin "$tag"
   ok "Poussé : la CI construit et publie l'image eden-app:${nouvelle}"
   info "Suivi : onglet « Actions » du dépôt, puis déploiement :"
