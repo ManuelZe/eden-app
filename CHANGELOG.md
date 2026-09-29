@@ -1,5 +1,12 @@
 # Historique des versions EDEN
 
+## v0.1.1 — 2026-09-29
+
+### Documentation
+
+- **angular.json** Modifications du fichier (500755b)
+- compléter la docuùentation (a8805b9)
+
 ## v0.1.0 — 2026-09-29
 
 ### Nouvelles fonctionnalités
