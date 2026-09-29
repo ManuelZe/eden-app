@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.3.4 — 2026-09-29
+
+### Corrections
+
+- **message** On enlève le logo de prime NG 2 (5a20c34)
+
 ## v0.3.3 — 2026-09-29
 
 ### Corrections
