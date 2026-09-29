@@ -23,7 +23,7 @@ exiger_commandes curl jq
 : "${PORTAINER_URL:?PORTAINER_URL manquant (deploiement.conf)}"
 : "${PORTAINER_API_KEY:?PORTAINER_API_KEY manquant (deploiement.conf)}"
 : "${PORTAINER_STACK_NAME:?PORTAINER_STACK_NAME manquant (deploiement.conf)}"
-DEPLOY_TIMEOUT="${DEPLOY_TIMEOUT:-180}"
+DEPLOY_TIMEOUT="${DEPLOY_TIMEOUT:-60}"
 HISTORIQUE="${EDEN_SCRIPTS_DIR}/historique-deploiements.log"
 
 CURL_OPTS=(-sS --fail-with-body --max-time 120 -H "X-API-Key: ${PORTAINER_API_KEY}")
@@ -73,14 +73,21 @@ if git -C "$EDEN_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
     || alerte "Aucun tag Git v${version} en local (git fetch --tags ?). Vérifiez que l'image existe bien."
 fi
 
+# Le fichier de la stack reste en JSON d'un bout à l'autre : renvoyé à Portainer à l'octet près.
+fichier_json="$(api GET "/stacks/${stack_id}/file")" || erreur "Impossible de lire le fichier de la stack : ${fichier_json}"
+contenu_stack="$(jq -r '.StackFileContent // empty' <<<"$fichier_json")"
+[[ -n "$contenu_stack" ]] || erreur "Fichier de stack vide ou illisible."
+# Sans ${EDEN_VERSION} dans la ligne image:, changer la variable ne déploie rien (version écrite en dur).
+grep -Eq '^[[:space:]]*image:.*\$\{EDEN_VERSION' <<<"$contenu_stack" \
+  || erreur "La ligne image: de la stack n'utilise pas \${EDEN_VERSION} : $(grep -E '^[[:space:]]*image:' <<<"$contenu_stack" | xargs)
+       Modifier EDEN_VERSION n'aurait aucun effet. Dans Portainer, remplacez la version écrite en dur par
+       \${EDEN_VERSION} (modèle : Documentation/portainer/eden-stack.yml), puis relancez ce script."
+
 confirmer "Déployer EDEN ${version} sur « ${PORTAINER_STACK_NAME} » (actuellement ${version_actuelle:-?}) ?"
 
 # -----------------------------------------------------------------------------
 etape "2. Préparation de la nouvelle configuration"
 # -----------------------------------------------------------------------------
-# Le fichier de la stack reste en JSON d'un bout à l'autre : renvoyé à Portainer à l'octet près.
-fichier_json="$(api GET "/stacks/${stack_id}/file")" || erreur "Impossible de lire le fichier de la stack : ${fichier_json}"
-[[ "$(jq -r '.StackFileContent // empty' <<<"$fichier_json")" != "" ]] || erreur "Fichier de stack vide ou illisible."
 
 nouvel_env="$(jq -c --arg v "$version" '
   (.Env // []) as $env
@@ -118,7 +125,7 @@ if [[ -n "${EDEN_PUBLIC_URL:-}" ]]; then
   if [[ "$statut" == "SUCCÈS" ]]; then
     ok "${EDEN_PUBLIC_URL}/healthz répond : ${sante}"
   else
-    alerte "La version ${version} n'est pas visible après ${DEPLOY_TIMEOUT}s (dernière réponse : ${sante:-aucune})."
+    alerte "La version ${version} n'est pas visible après ${DEPLOY_TIMEOUT}s (dernière réponse : ${sante:-aucune, ${EDEN_PUBLIC_URL} injoignable depuis ce poste : port publié sur 127.0.0.1 ou pare-feu ?})."
     alerte "Consultez Portainer > Containers > eden-app-* > Logs, puis envisagez : rollback.sh ${version_actuelle}"
   fi
 else
