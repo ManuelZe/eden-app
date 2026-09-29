@@ -5,8 +5,10 @@ services:
     restart: unless-stopped
     environment:
       API_URL: https://site.pdmdsante.com/
-      # Hosts allowed by the SSR server (hostname without the port)
-      NG_ALLOWED_HOSTS: 65.21.73.170
+      # Nom de domaine pur sans "https://" (ajoutez localhost/127.0.0.1 pour le healthcheck)
+      NG_ALLOWED_HOSTS: "eden.stones-enterprise.com,localhost,127.0.0.1"
+      # Ajout de x-forwarded-scheme dans les en-têtes proxy autorisés
+      NG_TRUST_PROXY_HEADERS: "x-forwarded-host,x-forwarded-proto,x-forwarded-for,x-forwarded-scheme"
       TZ: ${TZ:-Africa/Douala}
     # Public access http://65.21.73.170:9632 -> port 4000 of the container
     ports:
