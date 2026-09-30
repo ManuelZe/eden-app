@@ -215,3 +215,9 @@
     font-size: 0.82rem;
   }
 }
+.facture-establishment {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}

@@ -82,6 +82,9 @@
 
             <div class="card-body">
               <h2 class="exam-title" [title]="r.requested_test">{{ r.requested_test }}</h2>
+              @if (r.establishment) {
+                <p class="exam-meta">Établissement : {{ r.establishment }}</p>
+              }
 
               @if (r.error) {
                 <div class="facture-warning">

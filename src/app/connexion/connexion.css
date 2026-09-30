@@ -158,6 +158,39 @@
 }
 
 /* Formulaire */
+.login-mode {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 1.25rem;
+  border-radius: 10px;
+  background: #e8ebf2;
+}
+
+.login-mode button {
+  flex: 1;
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #545d6b;
+  cursor: pointer;
+}
+
+.login-mode button[aria-pressed='true'] {
+  background: #fff;
+  color: #1f2937;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.login-mode button:focus-visible {
+  outline: 3px solid #93b4f0;
+  outline-offset: 2px;
+}
+
 .credentials-form {
   margin-bottom: 1.5rem;
 }

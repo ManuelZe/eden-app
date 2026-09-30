@@ -80,6 +80,15 @@
         </div>
       </div>
 
+      <!-- Méthode de connexion -->
+      <div class="login-mode" role="group" aria-label="Méthode de connexion">
+        <button type="button" [attr.aria-pressed]="mode() === 'password'" (click)="mode.set('password')">Mot de passe</button>
+        <button type="button" [attr.aria-pressed]="mode() === 'email'" (click)="mode.set('email')">Code par e-mail</button>
+      </div>
+
+      @if (mode() === 'email') {
+        <app-email-code-login (loggedIn)="onLoggedIn()" />
+      } @else {
       <!-- Formulaire -->
       <form [formRoot]="form" (submit)="handleSubmit()" class="credentials-form">
         <!-- Username -->
@@ -137,6 +146,7 @@
           </a>
         </div>
       </form>
+      }
 
       <!-- Register Link -->
       <div class="register-section">

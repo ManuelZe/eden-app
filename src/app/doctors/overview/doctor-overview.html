@@ -1,5 +1,5 @@
 <div class="page">
-  <app-page-header title="Tableau de bord" [subtitle]="'Cycle de commissions en cours : ' + cycleLabel">
+  <app-page-header title="Tableau de bord" [subtitle]="commissionsEnabled() ? 'Cycle de commissions en cours : ' + cycleLabel : 'Les résultats partagés par vos patients.'">
     <button actions type="button" class="btn btn-ghost" (click)="refresh()" [disabled]="isRefreshing()">
       @if (isRefreshing()) {
         <span class="spinner" aria-hidden="true"></span>
@@ -10,6 +10,7 @@
     </button>
   </app-page-header>
 
+  @if (commissionsEnabled()) {
   <!-- ===== Solde du cycle : le chiffre clé ===== -->
   <section class="card hero" aria-labelledby="hero-title" [class.is-refreshing]="actual.refreshing()">
     <div class="hero-main">
@@ -60,8 +61,11 @@
     }
   </section>
 
+  }
+
   <!-- ===== Indicateurs ===== -->
-  <section class="kpis" aria-label="Indicateurs clés">
+  <section class="kpis" [class.kpis-single]="!commissionsEnabled()" aria-label="Indicateurs clés">
+    @if (commissionsEnabled()) {
     <app-kpi-tile
       label="Aujourd'hui"
       icon="bolt"
@@ -89,6 +93,7 @@
       [loading]="actual.loading() && !actual.data()"
       [error]="!!actual.error()"
     />
+    }
     <app-kpi-tile
       label="Résultats reçus"
       icon="inbox"
@@ -100,6 +105,7 @@
     />
   </section>
 
+  @if (commissionsEnabled()) {
   <div class="grid-2">
     <!-- ===== Top examens ===== -->
     <section class="card" aria-labelledby="top-title">
@@ -178,6 +184,8 @@
       }
     </section>
   </div>
+
+  }
 
   <!-- ===== Derniers résultats reçus ===== -->
   <section class="card" aria-labelledby="results-title">

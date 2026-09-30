@@ -297,3 +297,8 @@
     width: 100%;
   }
 }
+
+/* Établissement sans module commissions : seule la tuile « Résultats reçus » reste. */
+.kpis.kpis-single {
+  grid-template-columns: minmax(0, 360px);
+}

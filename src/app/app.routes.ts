@@ -20,6 +20,7 @@ import { Exploration } from './patients/exploration/exploration';
 import { Devis } from './patients/devis/devis';
 import { patientConfirmedGuard } from './patients/patient-confirmed-guard';
 import { doctorGuard } from './doctors/doctor-guards';
+import { superAdminGuard, tenantAdminGuard } from './saas/saas-guards';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'intro', pathMatch: 'full' },
@@ -27,6 +28,12 @@ export const routes: Routes = [
     { path: 'intro', component: Intro },
     { path: 'matricule', component: Matricule },
     { path: 'register', component: Register },
+    // Lien du QR code imprimé sur la facture : rattachement d'un dossier d'établissement au compte.
+    {
+        path: 'l/:token',
+        title: 'Rattacher mon dossier',
+        loadComponent: () => import('./saas/link-redeem/link-redeem').then((m) => m.LinkRedeem),
+    },
     { path: 'requests', component: Requests },
     { path: 'notifications', component: Notifications, canActivate: [authGuard] },
     {
@@ -45,6 +52,10 @@ export const routes: Routes = [
             { path: 'imagerie', component: Imagerie },
             { path: 'exploration', component: Exploration },
             { path: 'devis', component: Devis },
+            {
+                path: 'etablissements',
+                loadComponent: () => import('./patients/etablissements/etablissements').then((m) => m.Etablissements),
+            },
             { path: 'parametres', component: Parametres }
         ]
     },
@@ -52,5 +63,15 @@ export const routes: Routes = [
         path: 'doctors',
         canActivate: [authGuard, doctorGuard], // Connecté + rôle Doctor avec un profil docteur lié
         loadChildren: () => import('./doctors/doctors.routes').then((m) => m.DOCTOR_ROUTES),
+    },
+    {
+        path: 'admin',
+        canActivate: [authGuard, tenantAdminGuard], // Administrateur d'au moins un établissement
+        loadChildren: () => import('./saas/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+    },
+    {
+        path: 'super-admin',
+        canActivate: [authGuard, superAdminGuard], // Super-administrateur de la plateforme
+        loadChildren: () => import('./saas/super-admin/super-admin.routes').then((m) => m.SUPER_ADMIN_ROUTES),
     },
 ];

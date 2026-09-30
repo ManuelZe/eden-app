@@ -23,7 +23,7 @@
     </div>
 
     <nav class="sidebar-nav" aria-label="Espace docteur">
-      @for (entry of menu; track entry.label) {
+      @for (entry of visibleMenu(); track entry.label) {
         @if (isGroup(entry)) {
           <div class="menu-group">
             <button

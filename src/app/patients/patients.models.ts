@@ -9,9 +9,12 @@ export interface FacturesResponseApi {
   state: string;
   total_amount2: number;
   untaxed_amount: number;
+  /** Établissement émetteur (mode SaaS, plusieurs établissements par patient). */
+  establishment?: string | null;
 }
 
 export interface ExamenImagerie {
+  establishment?: string | null,
   computed_age: string,
   conclusion: string,
   create_date: string,
@@ -49,6 +52,7 @@ export interface ExamenImagerie {
 
 
 export interface ExamensLab {
+  establishment?: string | null,
   analytes_summary: string,
   date_analysis: string,
   date_requested: string,
@@ -82,6 +86,7 @@ export interface ExamensLab {
 
 
 export interface ExplorationLab {
+  establishment?: string | null,
   analytes_summary: string,
   commentaire: string,
   date_analysis: string,

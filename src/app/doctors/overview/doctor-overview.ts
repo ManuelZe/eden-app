@@ -8,6 +8,7 @@ import { StatusTag } from '../../patients/shared/status-tag/status-tag';
 import { CommissionsService } from '../commissions/commissions.service';
 import { dateValue, sortLinesByDate } from '../commissions/commissions.models';
 import { DoctorResultatsService } from '../resultats/doctor-resultats.service';
+import { SaasAccountService } from '../../saas/saas-account.service';
 import { currentCycle, daysUntilCycleEnd, formatCycle } from '../shared/commission-cycle';
 import { KpiTile } from '../../shared/kpi-tile/kpi-tile';
 import { PointsPipe, formatPoints } from '../shared/points';
@@ -23,6 +24,10 @@ export class DoctorOverview {
   private readonly authService = inject(AuthService);
   private readonly commissions = inject(CommissionsService);
   private readonly resultats = inject(DoctorResultatsService);
+  private readonly saasAccount = inject(SaasAccountService);
+
+  /** Module commissions : établissement GNU Health qui l'a activé (visible par défaut si le profil SaaS est indisponible). */
+  readonly commissionsEnabled = this.saasAccount.commissionsEnabled;
   private readonly platformId = inject(PLATFORM_ID);
 
   readonly cycle = currentCycle();
@@ -69,9 +74,13 @@ export class DoctorOverview {
   constructor() {
     effect(() => {
       const doctorId = this.authService.currentUser()?.doctor_id;
-      if (isPlatformBrowser(this.platformId) && doctorId !== null && doctorId !== undefined) {
-        untracked(() => this.load(false));
+      const settled = this.saasAccount.settled();
+      if (!isPlatformBrowser(this.platformId) || doctorId === null || doctorId === undefined) return;
+      if (!settled) {
+        untracked(() => this.saasAccount.load().subscribe());
+        return;
       }
+      untracked(() => this.load(false));
     });
   }
 
@@ -83,10 +92,12 @@ export class DoctorOverview {
     const doctorId = this.authService.currentUser()?.doctor_id;
     if (doctorId === null || doctorId === undefined) return;
 
-    this.commissions.loadActualSolde(doctorId, force);
-    this.commissions.loadToday(doctorId, force);
-    this.commissions.loadCycleDetail(doctorId, force);
-    this.commissions.loadGeneralSolde(doctorId, force);
+    if (this.commissionsEnabled()) {
+      this.commissions.loadActualSolde(doctorId, force);
+      this.commissions.loadToday(doctorId, force);
+      this.commissions.loadCycleDetail(doctorId, force);
+      this.commissions.loadGeneralSolde(doctorId, force);
+    }
     this.resultats.loadReceived(doctorId, force);
   }
 }

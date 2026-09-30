@@ -75,7 +75,12 @@
         <ng-template #body let-item>
           <tr [pSelectableRow]="item">
             <td>{{ item.date | date:'dd/MM/yyyy' }}</td>
-            <td>{{ item.reference }}</td>
+            <td>
+              {{ item.reference }}
+              @if (item.establishment) {
+                <span class="facture-establishment">{{ item.establishment }}</span>
+              }
+            </td>
             <td>{{ item.total_amount2 | number:'1.0-0' }} FCFA</td>
             <td>
               <app-status-tag kind="facture" [status]="item.state" />

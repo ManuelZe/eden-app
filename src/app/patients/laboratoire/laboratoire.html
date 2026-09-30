@@ -82,6 +82,9 @@
 
             <div class="card-body">
               <h2 class="exam-title" [title]="r.test">{{ r.test }}</h2>
+              @if (r.establishment) {
+                <p class="exam-meta">Établissement : {{ r.establishment }}</p>
+              }
 
               @if (r.requestor) {
                 <p class="exam-meta">Prescripteur : {{ r.requestor }}</p>

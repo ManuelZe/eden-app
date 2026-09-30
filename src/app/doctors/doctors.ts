@@ -13,6 +13,7 @@ import { DoctorResultatsService } from './resultats/doctor-resultats.service';
 import { DoctorInfoCard } from './shared/doctor-info-card/doctor-info-card';
 import { PointsPipe } from './shared/points';
 import { stripDoctorTitle } from './shared/doctor-name';
+import { SaasAccountService } from '../saas/saas-account.service';
 
 interface MenuLink {
   label: string;
@@ -50,6 +51,7 @@ export class Doctors {
   private readonly profileService = inject(DoctorProfileService);
   private readonly commissionsService = inject(CommissionsService);
   private readonly resultatsService = inject(DoctorResultatsService);
+  private readonly saasAccount = inject(SaasAccountService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
 
@@ -74,6 +76,11 @@ export class Doctors {
     { label: 'Notifications', icon: 'bell', link: '/doctors/notifications' },
     { label: 'Paramètres', icon: 'cog', link: SETTINGS_LINK },
   ];
+
+  /** Le groupe Commissions n'apparaît que si un établissement GNU Health du médecin l'active. */
+  readonly visibleMenu = computed(() =>
+    this.saasAccount.commissionsEnabled() ? this.menu : this.menu.filter((entry) => !(this.isGroup(entry) && entry.label === 'Commissions'))
+  );
 
   readonly collapsedGroups = signal<string[]>([]);
   readonly helpDialogOpen = signal(false);
@@ -102,11 +109,15 @@ export class Doctors {
     effect(() => {
       const user = this.authService.currentUser();
       const confirmed = this.profileService.isConfirmed();
+      const settled = this.saasAccount.settled();
+      const commissions = this.saasAccount.commissionsEnabled();
       if (!isPlatformBrowser(this.platformId) || !user || user.doctor_id === null) return;
       const doctorId = user.doctor_id;
       untracked(() => {
         this.profileService.loadProfile(doctorId).subscribe();
-        if (confirmed) {
+        if (!settled) {
+          this.saasAccount.load().subscribe();
+        } else if (confirmed && commissions) {
           this.commissionsService.loadActualSolde(doctorId);
         }
       });

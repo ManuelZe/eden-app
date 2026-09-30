@@ -15,6 +15,7 @@ import { Prescription, PrescriptionDevis } from '../patients/prescriptions/presc
 import { UserRequest } from '../patients/requests/requests.models';
 import { ExamResultDetail, ExamType, SendResult } from '../patients/resultats/resultats.models';
 import { Suggestion } from '../patients/suggestion-box/suggestion-box.models';
+import { PatientLinkView } from '../saas/saas.models';
 import { DEMO_TOKEN_PREFIX, DemoSpace } from './demo-token';
 import patientJson from './data/patient.json';
 import doctorJson from './data/doctor.json';
@@ -134,6 +135,8 @@ interface DemoStore {
   notifications: AppNotification[];
   /** Fichiers joints ajoutés pendant la démo (ordonnances, pré-enregistrements). */
   uploads: Map<string, Blob>;
+  /** Établissements rattachés au patient démo (écran « Mes établissements »). */
+  links: PatientLinkView[];
   nextId: number;
 }
 
@@ -150,10 +153,28 @@ function db(): DemoStore {
       requests: [...patient.requests, ...doctor.requests],
       notifications: [...patient.notifications, ...doctor.notifications],
       uploads: new Map(),
+      links: [demoLink(1, 'Centre de démonstration EDEN', 'PAT-DEMO-0001')],
       nextId: 1,
     };
   }
   return store;
+}
+
+function demoLink(id: number, establishment: string, localRef: string): PatientLinkView {
+  const at = new Date();
+  at.setDate(at.getDate() - 240);
+  return {
+    id,
+    patient_id: 99001,
+    tenant_id: id,
+    establishment,
+    local_ref: localRef,
+    status: 'active',
+    method: 'qr',
+    verified_at: at.toISOString(),
+    created_at: at.toISOString(),
+    updated_at: null,
+  };
 }
 
 function newId(): number {
@@ -203,6 +224,29 @@ type Handler = (ctx: Ctx) => unknown;
 const ROUTES: [string, Handler][] = [
   // --- Session -------------------------------------------------------
   ['POST user/logout', () => ({ 'Message ': 'Déconnexion de la session démo.' })],
+
+  // --- Profil SaaS et établissements du patient ------------------------
+  ['GET saas/me', ({ user }) => ({
+    is_super_admin: false,
+    admin_tenants: [],
+    links: user.patient_id !== null ? db().links : [],
+    features: { commissions: user.doctor_id !== null },
+    patient_federation_id: user.patient_id !== null ? db().patient.profile.PatientFederationID : null,
+  })],
+  ['GET saas/me/links', ({ user }) => (user.patient_id !== null ? db().links : [])],
+  ['POST saas/me/links/redeem', () => {
+    const id = db().links.length + 1;
+    const link = demoLink(id, `Laboratoire Horizon (démo ${id})`, `HZ-DEMO-${String(id).padStart(4, '0')}`);
+    link.verified_at = now();
+    link.created_at = now();
+    db().links.push(link);
+    return { message: `${link.establishment} a été ajouté à votre compte.`, link };
+  }],
+  ['DELETE saas/me/links/:id', ({ params }) => {
+    const link = db().links.find((l) => l.id === Number(params[0])) ?? fail(404, 'Rattachement introuvable.');
+    db().links = db().links.filter((l) => l !== link);
+    return { message: `${link.establishment} a été retiré de votre compte.` };
+  }],
 
   // --- Profil patient -----------------------------------------------
   ['GET patient/factures/products/:ref', ({ params }) => db().patient.facture_products[params[0]] ?? fail(404, 'Aucune facture trouvée pour cette référence.')],

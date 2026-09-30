@@ -130,6 +130,7 @@ export class Patients {
     },
     { label: 'Prescriptions', icon: 'briefcase', link: '/patients/prescriptions' },
     { label: 'Résultats Partagés', icon: 'share-alt', link: '/patients/resultats' },
+    { label: 'Mes établissements', icon: 'building', link: '/patients/etablissements' },
     { label: 'Requêtes', icon: 'send', link: '/patients/requests' },
     { label: 'Pré-enregistrements', icon: 'check-circle', link: '/patients/enregistrement' },
     { label: 'Notifications', icon: 'bell', link: '/notifications' },
