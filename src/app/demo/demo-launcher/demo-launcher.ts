@@ -15,11 +15,11 @@ const CHOICES: DemoChoice[] = [
     title: 'Espace patient',
     description: 'Résultats de laboratoire, imagerie et exploration, factures, prescriptions, partage avec un médecin, requêtes…',
   },
-  {
-    space: 'doctor',
-    title: 'Espace médecin',
-    description: 'Tableau de bord des commissions (mois, année, période), relevé, résultats reçus des patients, actualités…',
-  },
+  // {
+  //   space: 'doctor',
+  //   title: 'Espace médecin',
+  //   description: 'Tableau de bord des commissions (mois, année, période), relevé, résultats reçus des patients, actualités…',
+  // },
 ];
 
 /** Bouton « Démo » de la page d'introduction : choix de l'espace puis ouverture de la session fictive. */
