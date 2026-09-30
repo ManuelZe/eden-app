@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth-service';
+import { isDemoToken } from '../demo/demo-token';
 
 /**
  * Ajoute automatiquement `Authorization: Bearer <token>` à chaque requête HTTP
@@ -19,7 +20,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const token = authService.token();
 
-  const authReq = token
+  // Le jeton de démo n'a aucune valeur pour l'API : on ne l'envoie jamais au serveur.
+  const authReq = token && !isDemoToken(token)
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
 

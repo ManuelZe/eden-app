@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PRIMENG_MODULES } from '../../others/shared-import';
 import { PIcon } from '@primeicons/angular/p-icon';
+import { DemoLauncher } from '../demo/demo-launcher/demo-launcher';
 
 
 interface FeatureCard {
@@ -13,7 +14,7 @@ interface FeatureCard {
 
 @Component({
   selector: 'app-intro',
-  imports: [PIcon, PRIMENG_MODULES, CommonModule, RouterLink],
+  imports: [PIcon, PRIMENG_MODULES, CommonModule, RouterLink, DemoLauncher],
   templateUrl: './intro.html',
   styleUrl: './intro.css',
 })

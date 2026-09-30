@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { NavigationCancel, NavigationEnd, NavigationError, Router, RouterOutlet } from '@angular/router';
 import { filter, take } from 'rxjs';
 import { RouteLoader } from './shared/route-loader/route-loader';
+import { DemoBanner } from './demo/demo-banner/demo-banner';
 
 /** Durée minimale d'affichage de l'écran de démarrage EDEN, pour que l'animation soit perçue sans ralentir l'accès. */
 const SPLASH_MIN_MS = 900;
@@ -10,7 +11,7 @@ const SPLASH_FADE_MS = 450;
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouteLoader],
+  imports: [RouterOutlet, RouteLoader, DemoBanner],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

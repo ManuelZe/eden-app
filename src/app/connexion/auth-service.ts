@@ -56,6 +56,11 @@ export class AuthService {
     };
   }
 
+  /** Ouvre une session sans passer par user/login (utilisé par le mode démo). */
+  openSession(user: CurrentUser): void {
+    this.setCurrentUser(user);
+  }
+
   private setCurrentUser(user: CurrentUser): void {
     this.currentUser.set(user);
     try {

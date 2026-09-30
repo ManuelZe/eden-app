@@ -8,6 +8,7 @@ import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './connexion/auth-interceptor';
+import { demoInterceptor } from './demo/demo-interceptor';
 
 const promptPreset = definePreset(Aura, {
   semantic: {
@@ -31,7 +32,7 @@ const promptPreset = definePreset(Aura, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([demoInterceptor, authInterceptor])),
     provideRouter(routes, withComponentInputBinding()), provideClientHydration(),
     providePrimeNG({
       license : "eyJpZCI6IjM4NTA2ZTVkLTQ3NmEtNDUwMi04ZDg2LTY0YzA3NzQ3ZGQ5NyIsInByb2R1Y3QiOiJwcmltZXVpIiwidGllciI6ImNvbW11bml0eSIsInR5cGUiOiJkZXYiLCJpYXQiOjE3ODI5MDUzODAsImV4cCI6MTgxNDQ0MTM4MH0.I7n5VbbUT4iokSQ3JuuvSN6HR4-6x00vQzIcumP-OGexo-iydFm-4LMFm-AyNaIGjWeNiWnWQcMQQavr5i3-Cw",
