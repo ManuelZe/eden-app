@@ -1,5 +1,11 @@
 # Historique des versions EDEN
 
+## v0.5.0 — 2026-09-30
+
+### Nouvelles fonctionnalités
+
+- **demo** Modification de l'application pour enlever tout ce qui a un trait avec les docteurs (87572d5)
+
 ## v0.4.0 — 2026-09-30
 
 ### Nouvelles fonctionnalités
