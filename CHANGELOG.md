@@ -1,5 +1,15 @@
 # Historique des versions EDEN
 
+## v0.4.0 — 2026-09-30
+
+### Nouvelles fonctionnalités
+
+- **demo** Ajout de la fonctionnalité Demo (cd91356)
+
+### Corrections
+
+- **url** Fix de l'url au footer (cfafb01)
+
 ## v0.3.7 — 2026-09-29
 
 ### Corrections
