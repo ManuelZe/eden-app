@@ -1,14 +1,16 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PIcon } from '@primeicons/angular/p-icon';
 import { environment } from '../../../../environments/environment';
 import { extractErrorMessage } from '../../../doctors/shared/api-resource';
 import { PageHeader } from '../../../patients/shared/page-header/page-header';
 import { SaasAccountService } from '../../saas-account.service';
+import { PDF_IMPORT_ENABLED } from '../../features';
 import { SOURCE_LABELS } from '../../saas.models';
 import { TenantAdminService } from '../../tenant-admin.service';
 import { TenantContext } from '../tenant-context.service';
 
-type Method = 'api' | 'fhir';
+type Method = 'api' | 'fhir' | 'pdf';
 
 /** Exemples d'envoi : même format que les données de la démo (src/app/demo/data/patient.json). */
 const EDEN_EXAMPLES = (base: string) => `# 1. Le patient (dossier local de l'établissement)
@@ -42,6 +44,10 @@ curl -X POST "${base}ingest/v1/link-tokens?qr=1" \\
 # Autres types : imagerie (clé « number »), exploration (clé « name »).
 # Retirer un envoi erroné : DELETE ${base}ingest/v1/laboratoire/LAB-0412`;
 
+const PDF_EXAMPLE = (base: string) => `curl -X POST ${base}ingest/v1/pdf \\
+  -H "X-EDEN-API-Key: VOTRE_CLE" \\
+  -F "file=@compte-rendu.pdf" -F "local_ref=P-88-17"`;
+
 const FHIR_EXAMPLE = (base: string) => `curl -X POST ${base}fhir/r4 \\
   -H "X-EDEN-API-Key: VOTRE_CLE" -H "Content-Type: application/fhir+json" \\
   -d '{
@@ -70,7 +76,7 @@ const FHIR_EXAMPLE = (base: string) => `curl -X POST ${base}fhir/r4 \\
 
 @Component({
   selector: 'app-admin-integration',
-  imports: [PIcon, PageHeader],
+  imports: [PIcon, PageHeader, RouterLink],
   templateUrl: './admin-integration.html',
   styleUrls: ['../../../doctors/shared/doctor-ui.css', '../../shared/console-ui.css'],
 })
@@ -80,12 +86,20 @@ export class AdminIntegration {
   readonly context = inject(TenantContext);
 
   readonly apiBase = environment.apiUrl;
-  readonly method = signal<Method>('api');
+  /** Faux : méthode PDF grisée (fonctionnalité disponible prochainement). */
+  readonly pdfEnabled = PDF_IMPORT_ENABLED;
+  /** Onglet ouvert par défaut : la méthode prévue pour l'établissement. */
+  readonly method = linkedSignal<Method>(() => {
+    const source = this.context.tenant()?.source_type;
+    return source === 'fhir' || source === 'pdf' ? source : 'api';
+  });
   readonly edenExample = EDEN_EXAMPLES(environment.apiUrl);
   readonly fhirExample = FHIR_EXAMPLE(environment.apiUrl);
+  readonly pdfExample = PDF_EXAMPLE(environment.apiUrl);
 
   readonly sourceLabel = computed(() => {
     const source = this.context.tenant()?.source_type;
+    if (source === 'pdf' && !this.pdfEnabled) return `${SOURCE_LABELS.pdf} (disponible prochainement)`;
     return source ? SOURCE_LABELS[source] : '';
   });
   readonly isGnuHealth = computed(() => this.context.tenant()?.source_type === 'gnuhealth');

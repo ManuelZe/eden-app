@@ -45,6 +45,16 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./records/admin-records').then((m) => m.AdminRecords),
       },
       {
+        path: 'imports-pdf',
+        title: 'Imports PDF' + TITLE_SUFFIX,
+        loadComponent: () => import('./pdf-imports/admin-pdf-imports').then((m) => m.AdminPdfImports),
+      },
+      {
+        path: 'imports-pdf/:id',
+        title: 'Compte rendu PDF' + TITLE_SUFFIX,
+        loadComponent: () => import('./pdf-imports/admin-pdf-import-detail').then((m) => m.AdminPdfImportDetail),
+      },
+      {
         path: 'integration',
         title: 'Intégration' + TITLE_SUFFIX,
         loadComponent: () => import('./integration/admin-integration').then((m) => m.AdminIntegration),

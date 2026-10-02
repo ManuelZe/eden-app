@@ -38,6 +38,11 @@ export class SuperAdminService {
     return this.http.put<TenantWithStats>(`${this.baseUrl}/tenants/${id}`, payload);
   }
 
+  /** Suppression définitive : l'identifiant (slug) doit être rappelé en confirmation. */
+  deleteTenant(id: number, confirmSlug: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/tenants/${id}`, { body: { confirm_slug: confirmSlug } });
+  }
+
   rotateApiKey(id: number): Observable<{ api_key: string; message: string }> {
     return this.http.post<{ api_key: string; message: string }>(`${this.baseUrl}/tenants/${id}/api-key`, {});
   }

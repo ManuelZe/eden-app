@@ -1,13 +1,13 @@
 import { Component, PLATFORM_ID, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { DatePipe, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { FormField, FormRoot, email, form, pattern, required } from '@angular/forms/signals';
+import { FormField, FormRoot, email, form, max, min, pattern, required } from '@angular/forms/signals';
 import { PIcon } from '@primeicons/angular/p-icon';
 import { extractErrorMessage } from '../../../doctors/shared/api-resource';
 import { PageHeader } from '../../../patients/shared/page-header/page-header';
 import { TenantContext } from '../../admin/tenant-context.service';
 import { SaasAccountService } from '../../saas-account.service';
-import { SOURCE_LABELS, SourceType, TenantAdminView, TenantWithStats } from '../../saas.models';
+import { SOURCE_LABELS, SourceType, TenantAdminView, TenantWithStats, quotaLabel } from '../../saas.models';
 import { SuperAdminService } from '../../super-admin.service';
 
 interface TenantModel {
@@ -16,6 +16,9 @@ interface TenantModel {
   source_type: SourceType;
   is_active: boolean;
   commissions_enabled: boolean;
+  pdf_ai_enabled: boolean;
+  pdf_quota_files: number;
+  pdf_quota_days: number;
 }
 
 @Component({
@@ -40,13 +43,23 @@ export class SuperTenantDetail {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly isGnuHealth = computed(() => this.tenant()?.source_type === 'gnuhealth');
-  readonly sources = computed<SourceType[]>(() => (this.isGnuHealth() ? ['gnuhealth'] : ['api', 'fhir']));
+  readonly sources = computed<SourceType[]>(() => (this.isGnuHealth() ? ['gnuhealth'] : ['api', 'fhir', 'pdf']));
 
-  readonly model = signal<TenantModel>({ name: '', slug: '', source_type: 'api', is_active: true, commissions_enabled: false });
+  readonly model = signal<TenantModel>({ name: '', slug: '', source_type: 'api', is_active: true, commissions_enabled: false, pdf_ai_enabled: false, pdf_quota_files: 10, pdf_quota_days: 1 });
   readonly tenantForm = form(this.model, (f) => {
     required(f.name, { message: 'Le nom est requis' });
     required(f.slug, { message: "L'identifiant est requis" });
     pattern(f.slug, /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/, { message: 'Minuscules, chiffres et tirets (3 caractères minimum)' });
+    required(f.pdf_quota_files, { message: 'Nombre de fichiers requis' });
+    min(f.pdf_quota_files, 1, { message: 'Au moins 1 fichier' });
+    max(f.pdf_quota_files, 10000, { message: '10 000 fichiers au maximum' });
+    required(f.pdf_quota_days, { message: 'Nombre de jours requis' });
+    min(f.pdf_quota_days, 1, { message: 'Au moins 1 jour' });
+    max(f.pdf_quota_days, 365, { message: '365 jours au maximum' });
+  });
+  readonly quotaPreview = computed(() => {
+    const { pdf_quota_files, pdf_quota_days } = this.model();
+    return pdf_quota_files >= 1 && pdf_quota_days >= 1 ? quotaLabel(pdf_quota_files, pdf_quota_days) : '';
   });
   readonly saving = signal(false);
   readonly saved = signal(false);
@@ -66,6 +79,15 @@ export class SuperTenantDetail {
   readonly adminError = signal<string | null>(null);
   readonly adminNotice = signal<string | null>(null);
   readonly removeAdminTarget = signal<TenantAdminView | null>(null);
+
+  readonly confirmDelete = signal(false);
+  readonly deleteModel = signal({ confirm_slug: '' });
+  readonly deleteForm = form(this.deleteModel, (f) => {
+    required(f.confirm_slug, { message: "Saisissez l'identifiant de l'établissement" });
+  });
+  readonly slugMatches = computed(() => this.deleteModel().confirm_slug.trim() === this.tenant()?.slug);
+  readonly deleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -99,6 +121,9 @@ export class SuperTenantDetail {
       source_type: tenant.source_type,
       is_active: tenant.is_active,
       commissions_enabled: !!tenant.settings?.commissions_enabled,
+      pdf_ai_enabled: !!tenant.settings?.pdf_ai_enabled,
+      pdf_quota_files: tenant.settings?.pdf_quota_files ?? 10,
+      pdf_quota_days: tenant.settings?.pdf_quota_days ?? 1,
     });
   }
 
@@ -121,7 +146,12 @@ export class SuperTenantDetail {
         slug: value.slug.trim(),
         source_type: value.source_type,
         is_active: value.is_active,
-        settings: { commissions_enabled: value.commissions_enabled },
+        settings: {
+          commissions_enabled: value.commissions_enabled,
+          pdf_ai_enabled: value.pdf_ai_enabled,
+          pdf_quota_files: Number(value.pdf_quota_files),
+          pdf_quota_days: Number(value.pdf_quota_days),
+        },
       })
       .subscribe({
         next: (tenant) => {
@@ -192,6 +222,30 @@ export class SuperTenantDetail {
       error: (err: unknown) => {
         this.removeAdminTarget.set(null);
         this.adminError.set(extractErrorMessage(err, 'Le retrait a échoué.'));
+      },
+    });
+  }
+
+  openDelete(): void {
+    this.deleteForm().reset({ confirm_slug: '' });
+    this.deleteError.set(null);
+    this.confirmDelete.set(true);
+  }
+
+  deleteTenant(): void {
+    if (!this.slugMatches() || this.deleting()) return;
+    this.deleting.set(true);
+    this.deleteError.set(null);
+    this.service.deleteTenant(this.tenantId(), this.deleteModel().confirm_slug.trim()).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.confirmDelete.set(false);
+        this.account.load(true).subscribe();
+        void this.router.navigateByUrl('/super-admin/etablissements');
+      },
+      error: (err: unknown) => {
+        this.deleting.set(false);
+        this.deleteError.set(extractErrorMessage(err, 'La suppression a échoué.'));
       },
     });
   }

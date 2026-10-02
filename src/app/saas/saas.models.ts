@@ -1,6 +1,6 @@
 /** Modèles des endpoints SaaS de l'API (/saas, /ingest, /fhir). */
 
-export type SourceType = 'gnuhealth' | 'api' | 'fhir';
+export type SourceType = 'gnuhealth' | 'api' | 'fhir' | 'pdf';
 export type LinkStatus = 'pending' | 'active' | 'revoked';
 export type RecordKind = 'laboratoire' | 'imagerie' | 'exploration' | 'facture';
 
@@ -13,6 +13,10 @@ export interface TenantSettings {
   primary_color: string;
   contact_email: string;
   contact_phone: string;
+  pdf_ai_enabled: boolean;
+  /** Quota d'imports PDF : `pdf_quota_files` fichiers par période de `pdf_quota_days` jours (super-administrateur). */
+  pdf_quota_files: number;
+  pdf_quota_days: number;
 }
 
 export interface Tenant {
@@ -159,6 +163,93 @@ export interface DoctorLinkView {
   is_confirmed: boolean;
 }
 
+export type PdfImportStatus = 'pret' | 'a_relire' | 'publie' | 'rejete' | 'erreur';
+
+/** Une valeur lue dans un compte rendu PDF (format des « details » d'un résultat EDEN). */
+export interface PdfValue {
+  code: string | null;
+  name: string;
+  result: number | null;
+  result_text?: string;
+  units: string;
+  lower_limit: number | null;
+  upper_limit: number | null;
+  normal_range?: string;
+  remarks?: string;
+  warning: boolean;
+  ligne_source?: string;
+}
+
+export interface PdfAnomaly {
+  code: string | null;
+  name: string | null;
+  result: number | null;
+  probleme: string;
+}
+
+export interface PdfExtraction {
+  methode: 'regles' | 'ia';
+  texte_present: boolean;
+  entete: { local_ref: string | null; validation_date: string | null };
+  details: PdfValue[];
+  a_relire: string[];
+  anomalies: PdfAnomaly[];
+  erreur_ia?: string | null;
+}
+
+export interface PdfImport {
+  id: number;
+  tenant_id: number;
+  filename: string | null;
+  file_size: number | null;
+  status: PdfImportStatus;
+  method: 'regles' | 'ia' | null;
+  local_ref: string | null;
+  exam_code: string | null;
+  title: string | null;
+  validation_date: string | null;
+  source: 'admin' | 'api' | null;
+  created_at: string;
+  updated_at: string | null;
+  published_at: string | null;
+  values_count: number;
+  issues_count: number;
+  extraction?: PdfExtraction;
+  ai_available?: boolean;
+}
+
+/** Consommation du quota d'imports PDF sur la période en cours. */
+export interface PdfQuota {
+  limit: number;
+  days: number;
+  used: number;
+  remaining: number;
+  /** Date à partir de laquelle un import redevient possible (quota épuisé), sinon null. */
+  next_available_at: string | null;
+}
+
+export interface PdfImportList extends Paged<PdfImport> {
+  counts: Record<PdfImportStatus, number>;
+  ai_available: boolean;
+  quota: PdfQuota;
+  /** Faux pour l'établissement GNU Health (résultats lus directement dans GNU Health). */
+  available: boolean;
+}
+
+/** « 10 fichiers par jour », « 30 fichiers tous les 7 jours ». */
+export function quotaLabel(files: number, days: number): string {
+  const fichiers = `${files} fichier${files > 1 ? 's' : ''}`;
+  return days === 1 ? `${fichiers} par jour` : `${fichiers} tous les ${days} jours`;
+}
+
+export const PDF_STATUS_LABELS: Record<PdfImportStatus, string> = {
+  pret: 'Prêt à publier',
+  a_relire: 'À relire',
+  publie: 'Publié',
+  rejete: 'Rejeté',
+  erreur: 'Erreur',
+};
+
 export interface SaasMe {
   is_super_admin: boolean;
   admin_tenants: Tenant[];
@@ -210,6 +301,7 @@ export const SOURCE_LABELS: Record<SourceType, string> = {
   gnuhealth: 'GNU Health (lecture directe)',
   api: 'API EDEN (format EDEN)',
   fhir: 'HL7 FHIR R4',
+  pdf: 'Scan / PDF de résultats',
 };
 
 export const RECORD_KIND_LABELS: Record<RecordKind, string> = {
@@ -249,6 +341,13 @@ export const AUDIT_LABELS: Record<string, string> = {
   'ingest.fhir': 'Données reçues (FHIR)',
   'ingest.deleted': 'Donnée retirée par l’établissement',
   'result.viewed': 'Résultat consulté par un médecin',
+  'pdf.imported': 'Compte rendu PDF déposé',
+  'pdf.corrected': 'Compte rendu PDF corrigé',
+  'pdf.reanalysed': 'Compte rendu PDF réanalysé',
+  'pdf.published': 'Compte rendu PDF publié',
+  'pdf.rejected': 'Compte rendu PDF rejeté',
+  'pdf.deleted': 'Compte rendu PDF supprimé',
+  'tenant.deleted': 'Établissement supprimé',
   'user.activated': 'Compte réactivé',
   'user.deactivated': 'Compte désactivé',
   'user.super_admin_granted': 'Droits super-administrateur accordés',

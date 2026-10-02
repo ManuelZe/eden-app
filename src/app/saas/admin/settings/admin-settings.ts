@@ -1,11 +1,12 @@
-import { Component, PLATFORM_ID, effect, inject, signal, untracked } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, PLATFORM_ID, computed, effect, inject, signal, untracked } from '@angular/core';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
 import { FormField, FormRoot, email, form, max, min, required } from '@angular/forms/signals';
 import { PIcon } from '@primeicons/angular/p-icon';
 import { extractErrorMessage } from '../../../doctors/shared/api-resource';
 import { PageHeader } from '../../../patients/shared/page-header/page-header';
 import { SaasAccountService } from '../../saas-account.service';
-import { TenantSettings } from '../../saas.models';
+import { PdfQuota, TenantSettings, quotaLabel } from '../../saas.models';
+import { PDF_IMPORT_ENABLED } from '../../features';
 import { TenantAdminService } from '../../tenant-admin.service';
 import { TenantContext } from '../tenant-context.service';
 
@@ -33,7 +34,7 @@ function emptyModel(): SettingsModel {
 
 @Component({
   selector: 'app-admin-settings',
-  imports: [FormField, FormRoot, PIcon, PageHeader],
+  imports: [DatePipe, FormField, FormRoot, PIcon, PageHeader],
   templateUrl: './admin-settings.html',
   styleUrls: ['../../../doctors/shared/doctor-ui.css', '../../shared/console-ui.css'],
 })
@@ -56,6 +57,16 @@ export class AdminSettings {
   });
 
   readonly loading = signal(false);
+  /** Réglages fixés par le super-administrateur : affichés ici, non modifiables. */
+  readonly managed = signal<TenantSettings | null>(null);
+  /** Faux : réglages PDF affichés grisés (fonctionnalité disponible prochainement). */
+  readonly pdfEnabled = PDF_IMPORT_ENABLED;
+  readonly pdfQuota = signal<PdfQuota | null>(null);
+  readonly pdfAvailable = signal(true);
+  readonly quotaText = computed(() => {
+    const s = this.managed();
+    return s ? quotaLabel(s.pdf_quota_files, s.pdf_quota_days) : '—';
+  });
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly saved = signal(false);
@@ -75,12 +86,21 @@ export class AdminSettings {
     this.service.tenant(id).subscribe({
       next: (tenant) => {
         this.model.set(this.toModel(tenant.settings));
+        this.managed.set(tenant.settings ?? null);
         this.loading.set(false);
       },
       error: (err: unknown) => {
         this.error.set(extractErrorMessage(err, 'Impossible de charger les paramètres.'));
         this.loading.set(false);
       },
+    });
+    if (!this.pdfEnabled) return;
+    this.service.pdfImports(id, { page: 1, page_size: 1 }).subscribe({
+      next: (list) => {
+        this.pdfQuota.set(list.quota);
+        this.pdfAvailable.set(list.available);
+      },
+      error: () => this.pdfQuota.set(null),
     });
   }
 

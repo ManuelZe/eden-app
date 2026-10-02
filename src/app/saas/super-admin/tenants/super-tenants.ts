@@ -22,7 +22,7 @@ export class SuperTenants {
 
   readonly sourceLabels = SOURCE_LABELS;
   /** GNU Health est réservé à l'établissement historique : on ne propose que l'API EDEN et FHIR. */
-  readonly sources: SourceType[] = ['api', 'fhir'];
+  readonly sources: SourceType[] = ['api', 'fhir', 'pdf'];
 
   readonly tenants = signal<TenantWithStats[] | null>(null);
   readonly loading = signal(false);

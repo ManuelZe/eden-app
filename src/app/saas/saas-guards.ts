@@ -10,7 +10,14 @@ export const tenantAdminGuard: CanActivateFn = () => {
   const account = inject(SaasAccountService);
   const router = inject(Router);
   if (!auth.isLoggedIn()) return router.parseUrl('/connexion');
-  return account.load().pipe(map((me) => (me && me.admin_tenants.length > 0 ? true : router.parseUrl(auth.homeUrl()))));
+  return account.load().pipe(
+    map((me) => {
+      if (me && me.admin_tenants.length > 0) return true;
+      // Rôle d'administrateur sans établissement : homeUrl() renverrait vers /admin (boucle).
+      const home = auth.homeUrl();
+      return router.parseUrl(home === '/admin' ? '/intro' : home);
+    })
+  );
 };
 
 /** /super-admin : réservé au super-administrateur. */

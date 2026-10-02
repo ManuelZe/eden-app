@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../connexion/auth-service';
 import { ConsoleMenuLink, ConsoleShell } from '../shared/console-shell/console-shell';
+import { PDF_IMPORT_ENABLED } from '../features';
 import { TenantContext } from './tenant-context.service';
 
 const MENU: ConsoleMenuLink[] = [
@@ -11,6 +12,7 @@ const MENU: ConsoleMenuLink[] = [
   { label: 'QR codes', icon: 'qrcode', link: '/admin/qr-codes' },
   { label: 'Médecins', icon: 'user-plus', link: '/admin/medecins' },
   { label: 'Données reçues', icon: 'database', link: '/admin/donnees' },
+  { label: 'Imports PDF', icon: 'file-pdf', link: '/admin/imports-pdf', disabled: !PDF_IMPORT_ENABLED, hint: PDF_IMPORT_ENABLED ? undefined : 'Bientôt' },
   { label: 'Intégration', icon: 'server', link: '/admin/integration' },
   { label: 'Paramètres', icon: 'cog', link: '/admin/parametres' },
   { label: 'Journal', icon: 'history', link: '/admin/journal' },

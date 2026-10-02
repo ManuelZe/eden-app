@@ -88,6 +88,36 @@
                 </span>
               </label>
             }
+            @if (!isGnuHealth()) {
+              <fieldset class="quota full">
+                <legend>Quota d'imports PDF</legend>
+                <div class="form-row">
+                  <label for="d-quota-files">Fichiers *</label>
+                  <input id="d-quota-files" class="field" type="number" inputmode="numeric" [formField]="tenantForm.pdf_quota_files" />
+                  @if (tenantForm.pdf_quota_files().invalid()) {
+                    <span class="form-error">{{ tenantForm.pdf_quota_files().errors()[0]?.message }}</span>
+                  }
+                </div>
+                <div class="form-row">
+                  <label for="d-quota-days">Par période de (jours) *</label>
+                  <input id="d-quota-days" class="field" type="number" inputmode="numeric" [formField]="tenantForm.pdf_quota_days" />
+                  @if (tenantForm.pdf_quota_days().invalid()) {
+                    <span class="form-error">{{ tenantForm.pdf_quota_days().errors()[0]?.message }}</span>
+                  }
+                </div>
+                <p class="form-hint full">
+                  {{ quotaPreview() ? quotaPreview() + ' (dépôts manuels et envois du logiciel).' : '' }}
+                  Une fois la limite atteinte, l'établissement patiente jusqu'à la période suivante (minuit). Visible, non modifiable, par l'administrateur de l'établissement.
+                </p>
+              </fieldset>
+            }
+            <label class="check-row full" for="d-pdf-ai">
+              <input id="d-pdf-ai" type="checkbox" [formField]="tenantForm.pdf_ai_enabled" />
+              <span>
+                <strong>Lecture des PDF par IA</strong><br />
+                <span class="muted">Les comptes rendus non reconnus par les règles sont envoyés à Claude (Anthropic). À n'activer qu'après accord de l'établissement sur ce transfert de données de santé.</span>
+              </span>
+            </label>
           </div>
           @if (saveError()) {
             <div class="banner banner-error notice" role="alert">
@@ -220,6 +250,56 @@
         </div>
       </form>
     </section>
+
+    @if (!isGnuHealth()) {
+      <section class="card danger-zone" aria-labelledby="danger-title">
+        <h2 class="card-title" id="danger-title">
+          <svg [pIcon]="'exclamation-triangle'" [size]="18" aria-hidden="true"></svg>
+          Zone sensible
+        </h2>
+        <p class="muted small-note first">
+          La suppression efface définitivement les données reçues de l'établissement, ses rattachements, ses QR codes, ses imports PDF
+          et ses administrateurs. Les comptes EDEN des patients et des médecins sont conservés. Pour une interruption temporaire,
+          décochez plutôt « Établissement actif ».
+        </p>
+        <div class="form-actions">
+          <button type="button" class="btn btn-danger" (click)="openDelete()">
+            <svg [pIcon]="'trash'" [size]="16" aria-hidden="true"></svg>
+            <span>Supprimer l'établissement</span>
+          </button>
+        </div>
+      </section>
+    }
+  }
+
+  @if (confirmDelete() && tenant(); as t) {
+    <div class="overlay" (click)="confirmDelete.set(false)">
+      <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-tenant-title" aria-describedby="delete-tenant-desc" (click)="$event.stopPropagation()">
+        <h2 id="delete-tenant-title">Supprimer {{ t.display_name }} ?</h2>
+        <p class="muted" id="delete-tenant-desc">
+          {{ t.stats.records_total }} donnée(s) reçue(s) et {{ t.stats.links_active + t.stats.links_pending }} rattachement(s) seront effacés.
+          Cette action est irréversible.
+        </p>
+        <form [formRoot]="deleteForm" (submit)="deleteTenant()">
+          <div class="form-row">
+            <label for="del-slug">Pour confirmer, saisissez <strong class="mono">{{ t.slug }}</strong></label>
+            <input id="del-slug" class="field mono" type="text" autocomplete="off" spellcheck="false" [formField]="deleteForm.confirm_slug" />
+          </div>
+          @if (deleteError()) {
+            <div class="banner banner-error notice" role="alert">
+              <svg [pIcon]="'exclamation-circle'" [size]="16" aria-hidden="true"></svg>
+              <span>{{ deleteError() }}</span>
+            </div>
+          }
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" (click)="confirmDelete.set(false)">Annuler</button>
+            <button type="submit" class="btn btn-danger" [disabled]="!slugMatches() || deleting()">
+              {{ deleting() ? 'Suppression…' : 'Supprimer définitivement' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   }
 
   @if (confirmRotate()) {

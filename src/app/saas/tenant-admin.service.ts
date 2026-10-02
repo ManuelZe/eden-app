@@ -11,6 +11,10 @@ import {
   Paged,
   PatientDetail,
   PatientLinkView,
+  PdfImport,
+  PdfImportList,
+  PdfImportStatus,
+  PdfValue,
   RecordKind,
   RecordSummary,
   Tenant,
@@ -25,6 +29,15 @@ export interface PageQuery {
   q?: string;
   status?: LinkStatus | '';
   kind?: RecordKind | '';
+  pdf_status?: PdfImportStatus | '';
+}
+
+export interface PdfCorrection {
+  local_ref?: string;
+  exam_code?: string;
+  title?: string;
+  validation_date?: string;
+  details?: Array<Omit<PdfValue, 'result' | 'lower_limit' | 'upper_limit'> & { result: string; lower_limit: string; upper_limit: string }>;
 }
 
 function toParams(query: PageQuery = {}): HttpParams {
@@ -114,6 +127,52 @@ export class TenantAdminService {
 
   records(tenantId: number, query: PageQuery): Observable<Paged<RecordSummary>> {
     return this.http.get<Paged<RecordSummary>>(this.url(tenantId, '/records'), { params: toParams(query) });
+  }
+
+  // ----- Comptes rendus PDF -------------------------------------------------
+
+  pdfImports(tenantId: number, query: PageQuery): Observable<PdfImportList> {
+    const { pdf_status, ...rest } = query;
+    let params = toParams(rest);
+    if (pdf_status) params = params.set('status', pdf_status);
+    return this.http.get<PdfImportList>(this.url(tenantId, '/pdf-imports'), { params });
+  }
+
+  uploadPdf(tenantId: number, file: File, fields: { local_ref?: string; exam_code?: string; title?: string }): Observable<PdfImport> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    for (const [key, value] of Object.entries(fields)) {
+      if (value?.trim()) body.append(key, value.trim());
+    }
+    return this.http.post<PdfImport>(this.url(tenantId, '/pdf-imports'), body);
+  }
+
+  pdfImport(tenantId: number, importId: number): Observable<PdfImport> {
+    return this.http.get<PdfImport>(this.url(tenantId, `/pdf-imports/${importId}`));
+  }
+
+  pdfFile(tenantId: number, importId: number): Observable<Blob> {
+    return this.http.get(this.url(tenantId, `/pdf-imports/${importId}/fichier`), { responseType: 'blob' });
+  }
+
+  correctPdf(tenantId: number, importId: number, correction: PdfCorrection): Observable<PdfImport> {
+    return this.http.put<PdfImport>(this.url(tenantId, `/pdf-imports/${importId}`), correction);
+  }
+
+  reanalysePdf(tenantId: number, importId: number, useAi: boolean): Observable<PdfImport> {
+    return this.http.post<PdfImport>(this.url(tenantId, `/pdf-imports/${importId}/reanalyse`), { use_ai: useAi });
+  }
+
+  publishPdf(tenantId: number, importId: number, confirmWarnings = false): Observable<PdfImport> {
+    return this.http.post<PdfImport>(this.url(tenantId, `/pdf-imports/${importId}/publier`), { confirm_warnings: confirmWarnings });
+  }
+
+  rejectPdf(tenantId: number, importId: number): Observable<PdfImport> {
+    return this.http.post<PdfImport>(this.url(tenantId, `/pdf-imports/${importId}/rejeter`), {});
+  }
+
+  deletePdf(tenantId: number, importId: number): Observable<unknown> {
+    return this.http.delete(this.url(tenantId, `/pdf-imports/${importId}`));
   }
 
   audit(tenantId: number, query: PageQuery): Observable<Paged<AuditEntry>> {

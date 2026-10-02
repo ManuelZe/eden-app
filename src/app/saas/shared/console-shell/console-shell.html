@@ -40,14 +40,19 @@
       @for (entry of menu(); track entry.link) {
         <a
           class="menu-item"
-          [routerLink]="entry.link"
+          [routerLink]="entry.disabled ? null : entry.link"
           routerLinkActive="active"
           ariaCurrentWhenActive="page"
           [routerLinkActiveOptions]="{ exact: !!entry.exact }"
-          (click)="onNavigate()"
+          [class.menu-item-locked]="entry.disabled"
+          [attr.aria-disabled]="entry.disabled || null"
+          (click)="entry.disabled ? null : onNavigate()"
         >
           <svg [pIcon]="entry.icon" [size]="20" aria-hidden="true"></svg>
           <span>{{ entry.label }}</span>
+          @if (entry.hint) {
+            <span class="menu-hint">{{ entry.hint }}</span>
+          }
         </a>
       }
     </nav>

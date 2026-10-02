@@ -10,6 +10,10 @@ export interface ConsoleMenuLink {
   icon: string;
   link: string;
   exact?: boolean;
+  /** Entrée visible mais grisée et inactive (fonctionnalité pas encore ouverte). */
+  disabled?: boolean;
+  /** Mention courte affichée à droite, ex. « Bientôt ». */
+  hint?: string;
 }
 
 export interface ConsoleTenantOption {

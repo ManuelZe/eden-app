@@ -57,8 +57,26 @@
       <div class="segmented" role="group" aria-label="Méthode d'envoi">
         <button type="button" [attr.aria-pressed]="method() === 'api'" (click)="method.set('api')">API EDEN</button>
         <button type="button" [attr.aria-pressed]="method() === 'fhir'" (click)="method.set('fhir')">HL7 FHIR R4</button>
+        <button type="button" [attr.aria-pressed]="method() === 'pdf'" [disabled]="!pdfEnabled" (click)="method.set('pdf')">
+          Scan / PDF@if (!pdfEnabled) { <span class="soon-tag">prochainement</span> }
+        </button>
       </div>
-      @if (method() === 'api') {
+      @if (method() === 'pdf') {
+        @if (!pdfEnabled) {
+          <p class="small-note soon-note">
+            <svg [pIcon]="'clock'" [size]="14" aria-hidden="true"></svg>
+            Import des résultats par PDF : fonctionnalité disponible prochainement.
+          </p>
+        }
+        <div [class.feature-off-inline]="!pdfEnabled" [attr.inert]="pdfEnabled ? null : ''">
+        <p class="muted example-intro">
+          Comptes rendus PDF (fichier ou scan) : déposez-les dans la page <a class="link" routerLink="/admin/imports-pdf">Imports PDF</a>,
+          ou envoyez-les depuis votre logiciel. EDEN en extrait les valeurs ; rien n'est publié avant votre relecture.
+          Le nombre de fichiers est limité par période (voir Paramètres).
+        </p>
+        <pre class="code" tabindex="0" aria-label="Exemple d'envoi d'un compte rendu PDF">{{ pdfExample }}</pre>
+        </div>
+      } @else if (method() === 'api') {
         <p class="muted example-intro">
           Format EDEN : les mêmes champs que les écrans patients (identiques aux données de la démo). Chaque envoi est une liste
           (500 éléments au maximum) ; renvoyer un élément avec le même code le met à jour.

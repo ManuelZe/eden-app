@@ -91,5 +91,37 @@
         </button>
       </div>
     </form>
+
+    <section class="card spaced" aria-labelledby="managed-title">
+      <h2 class="card-title" id="managed-title">
+        <svg [pIcon]="'lock'" [size]="18" aria-hidden="true"></svg>
+        Fixé par EDEN
+      </h2>
+      <p class="muted small-note first">Ces réglages sont définis par le super-administrateur EDEN. Contactez-le pour les faire évoluer.</p>
+      @if (!pdfEnabled) {
+        <p class="small-note soon-note">
+          <svg [pIcon]="'clock'" [size]="14" aria-hidden="true"></svg>
+          Import des résultats par PDF : fonctionnalité disponible prochainement.
+        </p>
+      }
+      @if (pdfAvailable()) {
+        <dl class="facts" [class.feature-off-inline]="!pdfEnabled">
+          <div><dt>Imports PDF autorisés</dt><dd>{{ quotaText() }}</dd></div>
+          @if (pdfQuota(); as q) {
+            <div>
+              <dt>Utilisés sur la période</dt>
+              <dd>{{ q.used }} / {{ q.limit }}</dd>
+            </div>
+            <div>
+              <dt>Prochain import</dt>
+              <dd>{{ q.next_available_at ? 'le ' + (q.next_available_at | date: "dd/MM/yyyy 'à' HH:mm") : 'possible maintenant' }}</dd>
+            </div>
+          }
+          <div><dt>Lecture des PDF par IA</dt><dd>{{ managed()?.pdf_ai_enabled ? 'Activée' : 'Désactivée' }}</dd></div>
+        </dl>
+      } @else {
+        <p class="muted small-note">Imports PDF : non disponibles (résultats lus directement dans GNU Health).</p>
+      }
+    </section>
   }
 </div>
