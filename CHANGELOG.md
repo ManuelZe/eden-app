@@ -1,5 +1,18 @@
 # Historique des versions EDEN
 
+## v0.6.0 — 2026-11-17
+
+### Nouvelles fonctionnalités
+
+- **saas** etat des choses en ce qui concerne mon saas (b356391)
+- **saas** Nouvelle fonctionnalité - Eden En mode Saas (21e333f)
+
+### Corrections
+
+- **add_doctor** Remettons doctor sur demo (7285ec3)
+- **add_doctor** Remettons doctor (89e064f)
+- **cle** le calendrier éditorail (681c841)
+
 ## v0.5.0 — 2026-09-30
 
 ### Nouvelles fonctionnalités
